@@ -1,9 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-class ProductPage:
+class CartPage:
     def __init__(self, driver:webdriver):
         self.driver = driver
 
-    def page_title_text(self):
-        return self.driver.find_element(By.CLASS_NAME, "pd-name").text
+    def open_cart(self):
+        self.driver.find_element(By.CSS_SELECTOR, "[href='/cart']").click()
