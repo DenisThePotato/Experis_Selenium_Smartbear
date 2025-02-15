@@ -18,13 +18,19 @@ from page_classes_package.product_page import ProductPage
 class ScreenSwap(TestCase):
     def setUp(self):
         self.driver = webdriver.Edge()
-        self.driver.get("https://petstore.octoperf.com/actions/Catalog.action")
+        self.driver.get("https://bearstore-testsite.smartbear.com/")
         self.driver.maximize_window()
         self.driver.implicitly_wait(5)
-        self.home_page = MainPage(self.driver)
+        self.main_page = MainPage(self.driver)
         self.category_page = CategoryPage(self.driver)
         self.product_page = ProductPage(self.driver)
 
     def tearDown(self):
         sleep(3)
         self.driver.quit()
+
+    def test_1_E2E(self):
+        category = self.main_page.get_random_category()
+        category.click()
+        self.assertEqual(self.category_page.page_title_text(), category.text)
+
