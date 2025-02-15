@@ -14,7 +14,7 @@ from page_classes_package.category_page import CategoryPage
 from page_classes_package.product_page import ProductPage
 
 
-class ScreenSwap(TestCase):
+class TestSmartbear(TestCase):
     def setUp(self):
         self.driver = webdriver.Edge()
         self.driver.get("https://bearstore-testsite.smartbear.com/")
@@ -29,36 +29,41 @@ class ScreenSwap(TestCase):
         self.driver.quit()
 
     def test_1_E2E(self):
-        # test A
+        # test A- home page -> category page
         main_page_text = self.main_page.page_title_text()
         category = self.main_page.get_random_category()
         category_text = category.text
         category.click()
-        self.assertEqual(self.category_page.page_title_text(), category_text, "Test A failed- Category title incorrect")
-        #self.assertEqual(self.category_page.breadcrumb_title(), category_text, "Test A failed- breadcrumb title incorrect")
-        # test B
+        self.assertEqual(self.category_page.page_title_text(), category_text, "Test A failed- category title incorrect")
+        self.assertEqual(self.category_page.breadcrumb_title(), category_text, "Test A failed- breadcrumb title incorrect")
+
+        # test B- category page -> product page
         self.category_page.show_max_products_per_page()
         product_block = self.category_page.get_random_product_block()
         product_name = self.category_page.product_block_name(product_block)
         self.category_page.click_on_product_block(product_block)
-        self.assertEqual(self.product_page.page_title_text(), product_name, "Test B failed- Product title incorrect")
-        # test C
+        self.assertEqual(self.product_page.page_title_text(), product_name, "Test B failed- product title incorrect")
+        self.assertEqual(self.product_page.breadcrumb_title(), product_name, "Test B failed- breadcrumb title incorrect")
+
+        # test C- product page -> category page
         self.product_page.item_category().click()
-        self.assertEqual(self.category_page.page_title_text(), category_text, "Test C failed- breadcrumb Back to category page ")
+        self.assertEqual(self.category_page.page_title_text(), category_text, "Test C failed- page title incorrect")
+        self.assertEqual(self.category_page.breadcrumb_title(), category_text,"Test C failed- breadcrumb title incorrect")
+
         # test D
         self.category_page.main_page().click()
-        self.assertEqual(main_page_text, self.main_page.page_title_text(), "Test D failed- breadcrumb back to main screen")
+        self.assertEqual(self.main_page.page_title_text(), main_page_text, "Test D failed- page title incorrect")
 
 
     """home page -> category page"""
-    def test_a(self):
+    def test_1_a(self):
         category = self.main_page.get_random_category()
         category_text = category.text
         category.click()
         self.assertEqual(self.category_page.page_title_text(), category_text)
 
     """category page -> product page"""
-    def test_b(self):
+    def test_1_b(self):
         self.driver.get("https://bearstore-testsite.smartbear.com/watches")
         self.category_page.show_max_products_per_page()
         product_block = self.category_page.get_random_product_block()
@@ -67,12 +72,23 @@ class ScreenSwap(TestCase):
         self.assertEqual(self.product_page.page_title_text(), product_name)
 
     """product page -> category page"""
-    def test_c(self):
+    def test_1_c(self):
         self.driver.get("https://bearstore-testsite.smartbear.com/ball-chair")
         self.product_page.item_category().click()
-        self.assertEqual(self.category_page.page_title_text(), category_text)
 
     """category page -> home page"""
-    def test_d(self):
+    def test_1_d(self):
         pass
+
+    """add 2 products with different quantities, and check the product quantities in cart"""
+    def test_2_E2E(self):
+        categories_used_text = []
+        for i in range(2):
+            category = self.main_page.get_random_category()
+            categories_used_text.append(category.text)
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.add_to_cart(i + 1)
+        # the products are in the cart. now just check the cart.
 

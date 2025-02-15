@@ -14,4 +14,5 @@ class CartPage:
         self.driver = driver
 
     def open_cart(self):
-        self.driver.find_element(By.CSS_SELECTOR, "[href='/cart']").click()
+        #self.driver.find_element(By.CSS_SELECTOR, "[href='/cart']").click()
+        self.driver.find_element(By.ID, "shopbar-cart").click()

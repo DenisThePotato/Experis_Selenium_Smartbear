@@ -52,5 +52,5 @@ class CategoryPage:
         return self.driver.find_element(By.CSS_SELECTOR, ".breadcrumb.mb-0 > li:nth-child(1) > a > i")
 
     def breadcrumb_title(self):
-        return self.driver.find_element(By.CSS_SELECTOR, "breadcrumb-item.active > span").text
+        return self.driver.find_element(By.CSS_SELECTOR, ".breadcrumb-item.active > span").text
 
