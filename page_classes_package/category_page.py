@@ -17,7 +17,17 @@ class CategoryPage:
         return self.driver.find_elements(By.CSS_SELECTOR, ".artlist-sub-categories > article")
 
     def product_list(self):
-        return self.driver.find_elements(By.CSS_SELECTOR, "#artist-8431367681 > article")
+        # return self.driver.find_elements(By.CSS_SELECTOR, "#artist-8431367681 > article") find only for specific category
+        return self.driver.find_elements(By.CSS_SELECTOR, "[id^='artlist-'] > article")
+
+    def get_random_product_block(self):
+        return self.product_list()[randint(0, len(self.product_list()) - 1)]
+
+    def click_on_product_block(self, block):
+        block.find_element(By.CSS_SELECTOR, "h3 > a > span").click()
+
+    def product_block_name(self, block):
+        return block.find_element(By.CSS_SELECTOR, "h3 > a > span").text
 
     def page_title_text(self):
         return self.driver.find_element(By.CLASS_NAME, "h3").text
@@ -37,4 +47,10 @@ class CategoryPage:
             if int(element.text) > max_option:
                 max_option = int(element.text)
         return str(max_option)
+
+    def main_page(self):
+        return self.driver.find_element(By.CSS_SELECTOR, ".breadcrumb.mb-0 > li:nth-child(1) > a > i")
+
+    def breadcrumb_title(self):
+        return self.driver.find_element(By.CSS_SELECTOR, "breadcrumb-item.active > span").text
 
