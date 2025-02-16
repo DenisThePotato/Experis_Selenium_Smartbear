@@ -16,3 +16,27 @@ class CartPage:
     def open_cart(self):
         #self.driver.find_element(By.CSS_SELECTOR, "[href='/cart']").click()
         self.driver.find_element(By.ID, "shopbar-cart").click()
+
+    def item_list(self):
+        self.driver.find_elements(By.CLASS_NAME, "offcanvas-cart-item")
+
+    def item_name(self, item):
+        return item.find_element(By.CSS_SELECTOR, ".col.col-data > a").text
+
+    def item_description(self):
+        pass
+
+    def item_quantity(self):
+        pass
+
+    def item_price(self):
+        pass
+
+    def remove_item(self):
+        pass
+
+    def total_price(self):
+        pass
+
+    def checkout(self):
+        pass

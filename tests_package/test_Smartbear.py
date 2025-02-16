@@ -85,10 +85,25 @@ class TestSmartbear(TestCase):
         categories_used_text = []
         for i in range(2):
             category = self.main_page.get_random_category()
+            while category.text in categories_used_text or category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
             categories_used_text.append(category.text)
             category.click()
             self.category_page.show_max_products_per_page()
             self.category_page.click_on_product_block(self.category_page.get_random_product_block())
-            self.product_page.add_to_cart(i + 1)
+            self.product_page.set_quantity(i + 1)
+            self.product_page.add_to_cart()
         # the products are in the cart. now just check the cart.
+
+    def test_2_misc(self):
+        self.driver.get("https://bearstore-testsite.smartbear.com/ball-chair")
+        # print(self.product_page.price_float())
+        # self.product_page.increase_quantity_by_one()
+        # print(self.product_page.price_float())
+        #print(self.product_page.manually_calculated_price())
+        print(self.product_page.manually_calculated_price())
+        self.product_page.increase_quantity_by_one()
+        print(self.product_page.manually_calculated_price())
+        self.product_page.increase_quantity_by_one()
+        print(self.product_page.manually_calculated_price())
 
