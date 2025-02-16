@@ -16,9 +16,17 @@ class CartPage:
     def open_cart(self):
         #self.driver.find_element(By.CSS_SELECTOR, "[href='/cart']").click()
         self.driver.find_element(By.ID, "shopbar-cart").click()
+        self.wait_for_cart_to_open()
 
-    def item_list(self):
-        self.driver.find_elements(By.CLASS_NAME, "offcanvas-cart-item")
+    """gets out of the cart and back to the site"""
+    def close_cart(self):
+        self.driver.find_element(By.CSS_SELECTOR, ".canvas-blocker.canvas-slidable").click()
+        self.wait_for_cart_to_close()
+        # overlay = self.driver.find_element(By.CSS_SELECTOR, "div.page-main.canvas-slidable")
+        # ActionChains(self.driver).move_to_element(overlay).click().perform()
+
+    def item_blocks_list(self):
+        return self.driver.find_elements(By.CLASS_NAME, "offcanvas-cart-item")
 
     def item_name(self, item):
         return item.find_element(By.CSS_SELECTOR, ".col.col-data > a").text
@@ -26,8 +34,8 @@ class CartPage:
     def item_description(self):
         pass
 
-    def item_quantity(self):
-        pass
+    def item_quantity(self, item):
+        return int(item.find_element(By.ID, "item_EnteredQuantity").get_attribute("value"))
 
     def item_price(self):
         pass
@@ -40,3 +48,23 @@ class CartPage:
 
     def checkout(self):
         pass
+
+    def delete_cart(self):
+        self.open_cart()
+        for i in range(len(self.item_blocks_list())):
+            self.item_blocks_list()[i].find_element(By.XPATH, "div[2]/div[3]/a[2]").click()
+            self.wait_for_cart_update()
+
+    def wait_for_cart_update(self):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.invisibility_of_element_located((By.XPATH, '//*[@class="throbber small white" and contains(@style, "opacity: 0")]')))
+
+    def wait_for_cart_to_close(self):
+        wait = WebDriverWait(self.driver, 15)
+        wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR,
+                                                       "[class='lyt-cols-2']")))
+
+    def wait_for_cart_to_open(self):
+        wait = WebDriverWait(self.driver, 15)
+        wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR,
+                                                       "[class='on']")))

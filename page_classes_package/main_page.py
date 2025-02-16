@@ -23,7 +23,7 @@ class MainPage:
         self.driver.find_element(By.LINK_TEXT, "LOG IN").click()
 
     def open_main_screen(self):
-        self.driver.find_element(By.CSS_SELECTOR, ".shopbar-col.shop-logo > a").click() # try without > a
+        self.driver.find_element(By.CSS_SELECTOR, "[title='SmartStore']").click()
 
     def page_title_text(self):
         return self.driver.find_element(By.CLASS_NAME, "h2").text

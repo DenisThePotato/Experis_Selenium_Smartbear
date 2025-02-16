@@ -12,6 +12,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from page_classes_package.main_page import MainPage
 from page_classes_package.category_page import CategoryPage
 from page_classes_package.product_page import ProductPage
+from page_classes_package.cart_page import CartPage
+from page_classes_package.login_page import LoginPage
 
 
 class TestSmartbear(TestCase):
@@ -23,6 +25,8 @@ class TestSmartbear(TestCase):
         self.main_page = MainPage(self.driver)
         self.category_page = CategoryPage(self.driver)
         self.product_page = ProductPage(self.driver)
+        self.cart_side_page = CartPage(self.driver)
+        self.login_page = LoginPage(self.driver)
 
     def tearDown(self):
         sleep(3)
@@ -82,8 +86,10 @@ class TestSmartbear(TestCase):
 
     """add 2 products with different quantities, and check the product quantities in cart"""
     def test_2_E2E(self):
+        self.cart_side_page.delete_cart()
+        products_to_cart = 2
         categories_used_text = []
-        for i in range(2):
+        for i in range(1, products_to_cart + 1):
             category = self.main_page.get_random_category()
             while category.text in categories_used_text or category.text == "Gift Cards":
                 category = self.main_page.get_random_category()
@@ -93,17 +99,24 @@ class TestSmartbear(TestCase):
             self.category_page.click_on_product_block(self.category_page.get_random_product_block())
             self.product_page.set_quantity(i + 1)
             self.product_page.add_to_cart()
+            self.main_page.open_main_screen()
         # the products are in the cart. now just check the cart.
+        self.cart_side_page.open_cart()
+        cart_product_blocks = self.cart_side_page.item_blocks_list()
+        for i in range(products_to_cart):
+            self.assertEqual(self.cart_side_page.item_quantity(cart_product_blocks[i]), (i + 1), "quantity incorrect")
 
     def test_2_misc(self):
         self.driver.get("https://bearstore-testsite.smartbear.com/ball-chair")
-        # print(self.product_page.price_float())
-        # self.product_page.increase_quantity_by_one()
-        # print(self.product_page.price_float())
-        #print(self.product_page.manually_calculated_price())
-        print(self.product_page.manually_calculated_price())
-        self.product_page.increase_quantity_by_one()
-        print(self.product_page.manually_calculated_price())
-        self.product_page.increase_quantity_by_one()
-        print(self.product_page.manually_calculated_price())
+        self.cart_side_page.open_cart()
+        sleep(1)
+        self.cart_side_page.close_cart()
+        self.main_page.open_main_screen()
+
+    def test_9_E2E(self):
+        self.main_page.click_login()
+        self.login_page.fill_username("tester12345")
+        self.login_page.fill_password("Tester12345")
+        self.login_page.press_login()
+        self.login_page.logout()
 

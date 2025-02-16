@@ -32,6 +32,7 @@ class ProductPage:
         quantity_box = self.driver.find_element(By.CSS_SELECTOR, ".form-control.form-control-lg")
         quantity_box.clear()
         quantity_box.send_keys(quantity)
+        self.wait_for_quantity_update(quantity)
 
     """adds the item to cart"""
     def add_to_cart(self):
@@ -103,6 +104,10 @@ class ProductPage:
         cleaned_price = cleaned_price.replace(",", "")
         cleaned_price = cleaned_price.split()[0]
         return float(cleaned_price)
+
+    def wait_for_quantity_update(self, expected_quantity:int):
+        while int(self.driver.find_element(By.CSS_SELECTOR,".form-control.form-control-lg").get_attribute("value")) != expected_quantity:
+            continue
 
 
 
