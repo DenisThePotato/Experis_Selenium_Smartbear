@@ -9,12 +9,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from random import uniform
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+
+from page_classes_package.cart_page import CartPage
 from page_classes_package.main_page import MainPage
 from page_classes_package.category_page import CategoryPage
+from page_classes_package.order_details_page import OrderDetailsPage
 from page_classes_package.product_page import ProductPage
-from page_classes_package.cart_page import CartPage
+from page_classes_package.side_cart_menu import SideCartMenu
 from page_classes_package.login_page import LoginPage
-
+from page_classes_package.checkout_pages import CheckoutPage
 
 class TestSmartbear(TestCase):
     def setUp(self):
@@ -25,8 +28,11 @@ class TestSmartbear(TestCase):
         self.main_page = MainPage(self.driver)
         self.category_page = CategoryPage(self.driver)
         self.product_page = ProductPage(self.driver)
-        self.cart_side_page = CartPage(self.driver)
+        self.cart_side_page = SideCartMenu(self.driver)
         self.login_page = LoginPage(self.driver)
+        self.cart_page = CartPage(self.driver)
+        self.checkout_page = CheckoutPage(self.driver)
+        self.order_details_page = OrderDetailsPage(self.driver)
 
     def tearDown(self):
         sleep(3)
@@ -113,10 +119,28 @@ class TestSmartbear(TestCase):
         self.cart_side_page.close_cart()
         self.main_page.open_main_screen()
 
+    def test_8_E2E(self):
+        self.assertIn("Your order has been received", self.checkout_page.completion_page_checkout_data())
+
     def test_9_E2E(self):
         self.main_page.click_login()
         self.login_page.fill_username("tester12345")
         self.login_page.fill_password("Tester12345")
         self.login_page.press_login()
         self.login_page.logout()
+
+    def test_messing_around(self):
+        # Locate the element
+        self.cart_side_page.open_cart()
+        element = self.driver.find_element(By.CSS_SELECTOR, '.canvas-blocking')
+
+        # Execute JavaScript to get the computed style
+        display = self.driver.execute_script("return window.getComputedStyle(arguments[0]).getPropertyValue('display');",
+                                        element)
+        visibility = self.driver.execute_script(
+            "return window.getComputedStyle(arguments[0]).getPropertyValue('visibility');", element)
+
+        # Print the display and visibility properties
+        print(f"Display: {display}")
+        print(f"Visibility: {visibility}")
 

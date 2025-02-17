@@ -37,5 +37,10 @@ class LoginPage:
         # dropdown_element = self.driver.find_elements(By.CSS_SELECTOR, ".dropdown-menu.dropdown-menu-right.show > a")
         # dropdown = Select(dropdown_element)
         # dropdown.select_by_visible_text("Log out")
-        self.driver.find_element(By.CSS_SELECTOR, ".dropdown.show > .menubar-link").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#menubar-my-account > .dropdown").click()
+        WebDriverWait(self.driver, 5).until(
+            lambda driver: 'shown' in driver.find_element(By.CSS_SELECTOR, '.dropdown-menu.dropdown-menu-right').get_attribute('class'))
         self.driver.find_element(By.LINK_TEXT, "Log out")
+
+    def login_button_logged_in_text(self):
+        return self.driver.find_element(By.CSS_SELECTOR, ".menubar-link[href='/customer/info'] > span").text
