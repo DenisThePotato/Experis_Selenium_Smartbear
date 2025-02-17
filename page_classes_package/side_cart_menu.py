@@ -48,13 +48,16 @@ class SideCartMenu:
         pass
 
     def checkout(self):
-        pass
+        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-clear").click()
 
     def delete_cart(self):
         self.open_cart()
         for i in range(len(self.item_blocks_list())):
             self.item_blocks_list()[i].find_element(By.XPATH, ".//div[2]/div[3]/a[2]").click()
             self.wait_for_cart_update()
+
+    def go_to_cart_page(self):
+        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-success")
 
     def wait_for_cart_update(self):
         wait = WebDriverWait(self.driver, 10)

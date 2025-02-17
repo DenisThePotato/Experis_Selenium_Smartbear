@@ -15,3 +15,6 @@ class CartPage:
 
     def page_title_text(self):
         return self.driver.find_element(By.CLASS_NAME, "h2").text
+
+    def checkout(self):
+        self.driver.find_element(By.ID, "checkout").click()

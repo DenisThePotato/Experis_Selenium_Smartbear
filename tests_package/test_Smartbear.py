@@ -1,14 +1,13 @@
 from unittest import TestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from random import randint, choice
-from time import sleep
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from random import uniform
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from time import sleep
+from random import randint, choice, uniform
 
 from page_classes_package.cart_page import CartPage
 from page_classes_package.main_page import MainPage
@@ -106,6 +105,7 @@ class TestSmartbear(TestCase):
             self.product_page.set_quantity(i + 1)
             self.product_page.add_to_cart()
             self.main_page.open_main_screen()
+        i = 0
         # the products are in the cart. now just check the cart.
         self.cart_side_page.open_cart()
         cart_product_blocks = self.cart_side_page.item_blocks_list()
@@ -130,17 +130,5 @@ class TestSmartbear(TestCase):
         self.login_page.logout()
 
     def test_messing_around(self):
-        # Locate the element
-        self.cart_side_page.open_cart()
-        element = self.driver.find_element(By.CSS_SELECTOR, '.canvas-blocking')
-
-        # Execute JavaScript to get the computed style
-        display = self.driver.execute_script("return window.getComputedStyle(arguments[0]).getPropertyValue('display');",
-                                        element)
-        visibility = self.driver.execute_script(
-            "return window.getComputedStyle(arguments[0]).getPropertyValue('visibility');", element)
-
-        # Print the display and visibility properties
-        print(f"Display: {display}")
-        print(f"Visibility: {visibility}")
+        pass
 
