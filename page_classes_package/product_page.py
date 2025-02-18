@@ -9,6 +9,8 @@ from random import uniform
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
+from page_classes_package.common_page import Helper
+
 """a class giving actions and info for product pages"""
 class ProductPage:
     def __init__(self, driver:webdriver):
@@ -40,11 +42,15 @@ class ProductPage:
 
     """increases item quantity by one using the '+' button"""
     def increase_quantity_by_one(self):
+        quantity = self.get_quantity()
         self.driver.find_element(By.CSS_SELECTOR, ".fa.fa-plus").click()
+        self.wait_for_quantity_update(quantity + 1)
 
     """decreases item quantity by one using the '-' button"""
     def decrease_quantity_by_one(self):
+        quantity = self.get_quantity()
         self.driver.find_element(By.CSS_SELECTOR, ".fa.fa-minus").click()
+        self.wait_for_quantity_update(quantity - 1)
 
     """returns the boolean result of whether the product has a short description under its name"""
     def has_short_description(self):
@@ -64,7 +70,7 @@ class ProductPage:
         quantities = self.driver.find_elements(By.CSS_SELECTOR, ".pd-tierprice-qty.text-center")
         prices = self.driver.find_elements(By.CSS_SELECTOR, ".pd-tierprice-price.text-nowrap.text-center")
         for i in range(len(quantities)):
-            block_dict[int(quantities[i].text[0])] = float(self.extract_price(prices[i].text)) # prices[i].text[1:]
+            block_dict[int(quantities[i].text[0])] = float(Helper.extract_price(prices[i].text)) # prices[i].text[1:]
         return block_dict
 
     """returns a boolean result of whether the product has block pricing or not"""
@@ -75,10 +81,13 @@ class ProductPage:
         except:
             return False
 
+    def get_quantity(self):
+        return int(self.driver.find_element(By.CSS_SELECTOR, ".form-control.form-control-lg").get_attribute("value"))
+
     """returns the float value of the price of the product"""
     def price_float(self):
         full_price_str = self.driver.find_element(By.CSS_SELECTOR, "div[class='pd-price'] > meta[itemprop='price']").get_attribute("content")
-        return self.extract_price(full_price_str)
+        return Helper.extract_price(full_price_str)
         # cleaned_price = full_price_str.replace("$", "")
         # cleaned_price = cleaned_price.replace(",", "")
         # cleaned_price = cleaned_price.split()[0]
@@ -97,17 +106,15 @@ class ProductPage:
                 quantity_search -= 1
         return quantity * self.price_float()
 
-    """a helper method for other methods. gets a string with a price and returns the float price.
-    for example: input = '$2,560.30 USD excl tax.' output = 2560.30"""
-    def extract_price(self, price:str):
-        cleaned_price = price.replace("$", "")
-        cleaned_price = cleaned_price.replace(",", "")
-        cleaned_price = cleaned_price.split()[0]
-        return float(cleaned_price)
-
     def wait_for_quantity_update(self, expected_quantity:int):
-        while int(self.driver.find_element(By.CSS_SELECTOR,".form-control.form-control-lg").get_attribute("value")) != expected_quantity:
+        if expected_quantity < 1:
+            return
+        while int(self.get_quantity()) != expected_quantity:
             continue
+
+    """returns a dictionary with information about the product - name, quantity, price."""
+    def product_info_dictionary(self):
+        return {"name" : self.page_title_text(), "quantity": self.get_quantity(), "price" : self.price_float()}
 
 
 

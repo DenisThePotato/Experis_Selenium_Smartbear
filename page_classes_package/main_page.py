@@ -13,6 +13,11 @@ class MainPage:
     def __init__(self, driver:webdriver):
         self.driver = driver
 
+    def wait_for_main_page(self):
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "h2"))
+        )
+
     def category_list(self):
         return self.driver.find_elements(By.CSS_SELECTOR, "#menu-main > li")
 
@@ -27,3 +32,13 @@ class MainPage:
 
     def page_title_text(self):
         return self.driver.find_element(By.CLASS_NAME, "h2").text
+
+    def login_button_logged_in_text(self):
+        return self.driver.find_element(By.CSS_SELECTOR, ".menubar-link[href='/customer/info'] > span").text
+
+    def is_logged_in(self):
+        try:
+            self.driver.find_element(By.LINK_TEXT, "LOG IN")
+        except:
+            return True
+        return False

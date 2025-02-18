@@ -9,7 +9,7 @@ from random import uniform
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-class CommonPage:
+class Helper:
     def __init__(self, driver:webdriver):
         self.driver = driver
 
@@ -25,3 +25,12 @@ class CommonPage:
         # Print the display and visibility properties
         print(f"Display: {display}")
         print(f"Visibility: {visibility}")
+
+    """a helper method for other methods. gets a string with a price and returns the float price.
+        for example: input = '$2,560.30 USD excl tax.' output = 2560.30"""
+    @staticmethod
+    def extract_price(price: str):
+        cleaned_price = price.replace("$", "")
+        cleaned_price = cleaned_price.replace(",", "")
+        cleaned_price = cleaned_price.split()[0]
+        return float(cleaned_price)

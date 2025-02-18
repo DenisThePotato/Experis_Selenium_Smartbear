@@ -32,6 +32,14 @@ class TestSmartbear(TestCase):
         self.cart_page = CartPage(self.driver)
         self.checkout_page = CheckoutPage(self.driver)
         self.order_details_page = OrderDetailsPage(self.driver)
+        self.main_page.wait_for_main_page()
+        sleep(1)
+        if self.main_page.is_logged_in():
+            self.login_page.logout()
+            sleep(1)
+        self.cart_side_page.open_side_cart()
+        self.cart_side_page.empty_cart()
+        self.cart_side_page.close_side_cart()
 
     def tearDown(self):
         sleep(3)
@@ -91,10 +99,10 @@ class TestSmartbear(TestCase):
 
     """add 2 products with different quantities, and check the product quantities in cart"""
     def test_2_E2E(self):
-        self.cart_side_page.delete_cart()
-        products_to_cart = 2
+        num_of_products_to_add = 2    # max 5
+        expected_product_amounts = [num_of_products_to_add - i for i in range(num_of_products_to_add)]
         categories_used_text = []
-        for i in range(1, products_to_cart + 1):
+        for i in range(num_of_products_to_add):    # add the random products from unique categories to cart
             category = self.main_page.get_random_category()
             while category.text in categories_used_text or category.text == "Gift Cards":
                 category = self.main_page.get_random_category()
@@ -105,30 +113,172 @@ class TestSmartbear(TestCase):
             self.product_page.set_quantity(i + 1)
             self.product_page.add_to_cart()
             self.main_page.open_main_screen()
-        i = 0
-        # the products are in the cart. now just check the cart.
-        self.cart_side_page.open_cart()
-        cart_product_blocks = self.cart_side_page.item_blocks_list()
-        for i in range(products_to_cart):
-            self.assertEqual(self.cart_side_page.item_quantity(cart_product_blocks[i]), (i + 1), "quantity incorrect")
+        # compare the amount of items in cart to the amounts added
+        self.cart_side_page.open_side_cart()
+        cart_product_blocks = self.cart_side_page.get_item_blocks_list()
+        for i in range(num_of_products_to_add):
+            self.assertEqual(self.cart_side_page.get_item_quantity_from_block(cart_product_blocks[i]), expected_product_amounts[i], f"i = {i}, quantity incorrect")
 
-    def test_2_misc(self):
-        self.driver.get("https://bearstore-testsite.smartbear.com/ball-chair")
-        self.cart_side_page.open_cart()
+    """NAME - AMOUNT - PRICE
+    doesnt work because the price is sometimes taken before the update to the quantity, not taking block price into account"""
+    def test_3_E2E(self):
+        num_of_products_to_add = 3  # max 5
+        products_added_dictionaries = []
+        categories_used_text = []
+        for i in range(num_of_products_to_add):  # add the random products from unique categories to cart
+            category = self.main_page.get_random_category()
+            while category.text in categories_used_text or category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            categories_used_text.append(category.text)
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            products_added_dictionaries.insert(0, self.product_page.product_info_dictionary())
+            self.product_page.add_to_cart()
+            self.main_page.open_main_screen()
+        self.cart_side_page.open_side_cart()
+        for i in range(num_of_products_to_add):
+            current_cart_item_dic = self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[i])
+            for key in products_added_dictionaries[i]:
+                self.assertEqual(current_cart_item_dic[key], products_added_dictionaries[i][key], f"{current_cart_item_dic[key]} != {products_added_dictionaries[i][key]}"
+                                                                                                  f"\ncurrent item dic: {current_cart_item_dic}\nproducts_added dic: {products_added_dictionaries[i]}")
+
+    """adds 2 random products, removes one and checks the other in the cart (price, name, quantity)"""
+    def test_4_E2E(self):
+        num_of_products_to_add = 2  # max 5
+        categories_used_text = []
+        for i in range(num_of_products_to_add):  # add the random products from unique categories to cart
+            category = self.main_page.get_random_category()
+            while category.text in categories_used_text or category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            categories_used_text.append(category.text)
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            self.product_page.add_to_cart()
+            if i == 0:
+                product_dict = self.product_page.product_info_dictionary()
+            self.main_page.open_main_screen()
+        self.cart_side_page.open_side_cart()
+        self.cart_side_page.remove_item(self.cart_side_page.get_item_blocks_list()[0])   # removes the last item added
+        self.assertEqual(self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[0]),
+                         product_dict, f"cart item dict: {self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[0])}"
+                                       f"\nproduct page dict: {product_dict}")
+
+    def test_5_E2E(self):
+        category = self.main_page.get_random_category()
+        while category.text == "Gift Cards":
+            category = self.main_page.get_random_category()
+        category.click()
+        self.category_page.show_max_products_per_page()
+        self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+        self.product_page.add_to_cart()
+        self.assertTrue(self.cart_side_page.is_side_cart_open(),
+                        "cart was not opened upon addition of item to cart")
+        self.cart_side_page.close_side_cart()
+        self.assertFalse(self.cart_side_page.is_side_cart_open(),
+                         "cart was not closed when pressing on the side of the screen")
+        self.cart_side_page.open_side_cart()
+        self.assertTrue(self.cart_side_page.is_side_cart_open(),
+                        "cart was not opened upon clicking the cart icon")
         sleep(1)
-        self.cart_side_page.close_cart()
-        self.main_page.open_main_screen()
+        self.cart_side_page.go_to_cart_page()
+        sleep(1)
+        self.assertEqual(self.cart_page.page_title_text(), "Shopping cart",
+                         "didnt open the shopping cart page")
 
-    def test_8_E2E(self):
-        self.assertIn("Your order has been received", self.checkout_page.completion_page_checkout_data())
-
-    def test_9_E2E(self):
-        self.main_page.click_login()
-        self.login_page.fill_username("tester12345")
-        self.login_page.fill_password("Tester12345")
-        self.login_page.press_login()
-        self.login_page.logout()
-
-    def test_messing_around(self):
+    def test_6_E2E(self):
         pass
 
+    def test_7_E2E(self):
+        pass
+
+    def test_8_E2E(self):
+        username = "tester12345"
+        password = "Tester12345"
+        iterations = 2
+        for i in range(iterations):
+            category = self.main_page.get_random_category()
+            while category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            self.product_page.add_to_cart()
+            sleep(1)
+            if i != iterations - 1:
+                self.cart_side_page.close_side_cart()
+                sleep(1)
+                self.main_page.open_main_screen()
+        self.cart_side_page.go_to_cart_page()
+        self.cart_page.checkout()
+        self.login_page.fill_username(username)
+        self.login_page.fill_password(password)
+        self.login_page.press_login()
+        sleep(1)
+        self.cart_page.checkout()
+        self.checkout_page.address_page_bill_to_this_address()
+        self.checkout_page.address_page_ship_to_this_address()
+        self.checkout_page.choose_random_shipping_option()
+        self.checkout_page.shipping_page_click_next()
+        self.checkout_page.choose_random_payment_options()
+        self.checkout_page.payment_page_click_next()
+        sleep(1)
+        self.checkout_page.confirmation_page_agree_to_terms()
+        self.checkout_page.confirmation_page_click_confirm()
+        sleep(1)
+        self.assertEqual(self.checkout_page.completion_page_title(), "Your order has been received",
+                         "no confirmation message")
+        completion_page_order_number = self.checkout_page.completion_page_order_number()
+        # probably create relevant variables for each class and have them updated on certain method calls
+        self.checkout_page.completion_page_click_order_details()
+        sleep(1)
+        self.assertEqual(self.order_details_page.order_details_table_order_number(), completion_page_order_number,
+                         "order number doesnt match order details page table order number")
+        self.assertEqual(self.order_details_page.headline_order_number(), completion_page_order_number,
+                         "order number doesnt match order details page headline order number")
+
+    # test fails because the login displays the username in all caps. if it doesnt matter- .lower
+    def test_9_E2E(self):
+        username = "tester12345"
+        password = "Tester12345"
+        self.main_page.click_login()
+        self.login_page.fill_username(username)
+        self.login_page.fill_password(password)
+        self.login_page.press_login()
+        sleep(1)
+        self.assertEqual(self.main_page.login_button_logged_in_text(), username, "username doesnt match text")
+        self.login_page.logout()
+        self.assertFalse(self.main_page.is_logged_in(), "didnt log out properly")
+
+    ####################################################################################################################
+    def test_cart_actions(self):
+        # random product addition to cart
+        iterations = 1
+        for i in range(iterations):
+            category = self.main_page.get_random_category()
+            while category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            self.product_page.add_to_cart()
+            print(self.cart_side_page.get_item_quantity_from_block(self.cart_side_page.get_item_blocks_list()[0]))
+            sleep(1)
+            if i != iterations - 1:
+                self.cart_side_page.close_side_cart()
+                sleep(1)
+                self.main_page.open_main_screen()
+        # in the cart
+        # item_block_list = self.cart_side_page.item_blocks_list()
+        # self.cart_side_page.remove_item(item_block_list[0])
+        sleep(1)
+        self.cart_side_page.go_to_cart_page()
+
+    def test_cart_opening(self):
+        sleep(1)
+        self.cart_side_page.open_side_cart()

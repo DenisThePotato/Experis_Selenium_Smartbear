@@ -59,7 +59,7 @@ class CheckoutPage:
         choice(self.payment_page_payment_options_list_without_credit()).find_element(By.XPATH, ".//div[1]/div[1]/input[1]").click()
 
     def payment_page_click_next(self):
-        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-warning.btn-lg.payment-method-next-step-button")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-warning.btn-lg.payment-method-next-step-button").click()
 
     def payment_option_name(self, payment_option):
         return payment_option.find_element(By.CLASS_NAME, "opt-name").text
@@ -70,7 +70,7 @@ class CheckoutPage:
         self.driver.find_element(By.ID, "termsofservice").click()
 
     def confirmation_page_click_confirm(self):
-        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-danger.btn-lg.btn-block.btn-buy")
+        self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-danger.btn-lg.btn-block.btn-buy").click()
 
     ####################################################################################################################
 
@@ -82,3 +82,6 @@ class CheckoutPage:
 
     def completion_page_click_order_details(self):
         self.driver.find_element(By.CSS_SELECTOR, ".pt-3.mb-5 > a.btn-warning").click()
+
+    def completion_page_title(self):
+        return self.driver.find_element(By.TAG_NAME, "h1").text
