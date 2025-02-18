@@ -86,7 +86,8 @@ class ProductPage:
 
     """returns the float value of the price of the product"""
     def price_float(self):
-        full_price_str = self.driver.find_element(By.CSS_SELECTOR, "div[class='pd-price'] > meta[itemprop='price']").get_attribute("content")
+        #full_price_str = self.driver.find_element(By.CSS_SELECTOR, "div[class='pd-price'] > meta[itemprop='price']").get_attribute("content")
+        full_price_str = self.driver.find_element(By.CSS_SELECTOR, "div[class^='pd-price'] > span").text
         return Helper.extract_price(full_price_str)
         # cleaned_price = full_price_str.replace("$", "")
         # cleaned_price = cleaned_price.replace(",", "")
@@ -97,6 +98,16 @@ class ProductPage:
     whether the product has a price block or not"""
     def manually_calculated_price(self):
         quantity = int(self.driver.find_element(By.CSS_SELECTOR,".form-control.form-control-lg").get_attribute("value"))
+        quantity_search = quantity
+        if self.is_block_priced():
+            block_prices = self.block_pricing_dict()
+            while quantity_search > 1:
+                if quantity in block_prices.keys():
+                    return block_prices[quantity] * quantity
+                quantity_search -= 1
+        return quantity * self.price_float()
+
+    def manually_calculate_price_for_n_quantity(self, quantity):
         quantity_search = quantity
         if self.is_block_priced():
             block_prices = self.block_pricing_dict()

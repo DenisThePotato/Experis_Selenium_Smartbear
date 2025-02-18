@@ -8,8 +8,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 from random import randint, choice, uniform
+import logging
 
 from page_classes_package.cart_page import CartPage
+from page_classes_package.common_page import Helper
 from page_classes_package.main_page import MainPage
 from page_classes_package.category_page import CategoryPage
 from page_classes_package.order_details_page import OrderDetailsPage
@@ -157,6 +159,7 @@ class TestSmartbear(TestCase):
             self.category_page.show_max_products_per_page()
             self.category_page.click_on_product_block(self.category_page.get_random_product_block())
             self.product_page.set_quantity(i + 1)
+            sleep(1)
             self.product_page.add_to_cart()
             if i == 0:
                 product_dict = self.product_page.product_info_dictionary()
@@ -190,10 +193,85 @@ class TestSmartbear(TestCase):
                          "didnt open the shopping cart page")
 
     def test_6_E2E(self):
-        pass
+        # product_total_prices = []
+        # product_total_quantities = []
+        logging.basicConfig(level=logging.INFO)
+        total_calculated_cost = 0
+        categories_used_text = []
+        iterations = 3
+        for i in range(iterations):
+            category = self.main_page.get_random_category()
+            while category.text in categories_used_text or category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            categories_used_text.append(category.text)
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            sleep(2)
+            total_calculated_cost += self.product_page.manually_calculated_price()
+            # product_total_quantities.insert(0, self.product_page.get_quantity())
+            # product_total_prices.insert(0, self.product_page.manually_calculated_price())
+            self.product_page.add_to_cart()
+            sleep(1)
+            if i != iterations - 1:
+                self.cart_side_page.close_side_cart()
+                sleep(1)
+                self.main_page.open_main_screen()
+        self.assertEqual(self.cart_side_page.get_subtotal(), total_calculated_cost,
+                         "total cost in side cart doesnt match")
+        for i in range(iterations):
+            logging.info(self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[i]))
+        self.cart_side_page.go_to_cart_page()
+        sleep(1)
+        self.assertEqual(self.cart_page.get_subtotal(), total_calculated_cost, "total cost in cart doesnt match")
+        # for i in range(iterations):
+        #     self.assertEqual(self.cart_side_page.get_item_quantity_from_block(self.cart_side_page.get_item_blocks_list()[i]), product_total_quantities[i],
+        #                      "the quantities dont match")
+        #     self.assertEqual(self.cart_side_page.get_total_price_from_block(self.cart_side_page.get_item_blocks_list()[i]), product_total_prices),
+        #     "item prices dont match"
 
     def test_7_E2E(self):
-        pass
+        amount_price_tuples_list = []
+        categories_used_text = []
+        iterations = 2
+        for i in range(iterations):
+            category = self.main_page.get_random_category()
+            while category.text in categories_used_text or category.text == "Gift Cards":
+                category = self.main_page.get_random_category()
+            categories_used_text.append(category.text)
+            category.click()
+            self.category_page.show_max_products_per_page()
+            self.category_page.click_on_product_block(self.category_page.get_random_product_block())
+            self.product_page.set_quantity(i + 1)
+            sleep(2)
+            amount_price_tuples_list.insert(0, (i + 2, self.product_page.manually_calculate_price_for_n_quantity(i + 2) / (i + 2)))
+            # product_total_quantities.insert(0, self.product_page.get_quantity())
+            # product_total_prices.insert(0, self.product_page.manually_calculated_price())
+            self.product_page.add_to_cart()
+            sleep(2)
+            if i != iterations - 1:
+                self.cart_side_page.close_side_cart()
+                sleep(2)
+                self.main_page.open_main_screen()
+        total_cost = 0
+        for i in amount_price_tuples_list:
+            total_cost += i[0] * i[1]
+        self.cart_side_page.go_to_cart_page()
+        sleep(2)
+        self.cart_page.increase_all_quantities_by_n(1)
+        sleep(2)
+        for i in range(len(amount_price_tuples_list)):
+            self.assertEqual(Helper.extract_price(self.cart_page.get_total_item_price_element_list()[i].text), round(amount_price_tuples_list[i][0]*amount_price_tuples_list[i][1], 3),
+                             f"the total item price is not correct {amount_price_tuples_list}")
+        self.assertEqual(self.cart_page.get_subtotal(), total_cost,
+                         "total cost in side cart doesnt match")
+        self.main_page.open_main_screen()
+        self.cart_side_page.open_side_cart()
+        self.assertEqual(self.cart_side_page.get_subtotal(), total_cost,
+                         "the total cost in the side cart is incorrect")
+
+
 
     def test_8_E2E(self):
         username = "tester12345"
