@@ -33,4 +33,4 @@ class Helper:
         cleaned_price = price.replace("$", "")
         cleaned_price = cleaned_price.replace(",", "")
         cleaned_price = cleaned_price.split()[0]
-        return float(cleaned_price)
+        return round(float(cleaned_price), 3)

@@ -256,7 +256,7 @@ class TestSmartbear(TestCase):
                 self.main_page.open_main_screen()
         total_cost = 0
         for i in amount_price_tuples_list:
-            total_cost += i[0] * i[1]
+            total_cost += round(i[0] * i[1], 3)
         self.cart_side_page.go_to_cart_page()
         sleep(2)
         self.cart_page.increase_all_quantities_by_n(1)

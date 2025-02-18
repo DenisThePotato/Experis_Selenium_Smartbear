@@ -105,7 +105,7 @@ class ProductPage:
                 if quantity in block_prices.keys():
                     return block_prices[quantity] * quantity
                 quantity_search -= 1
-        return quantity * self.price_float()
+        return round(quantity * self.price_float(), 3)
 
     def manually_calculate_price_for_n_quantity(self, quantity):
         quantity_search = quantity
@@ -115,7 +115,7 @@ class ProductPage:
                 if quantity in block_prices.keys():
                     return block_prices[quantity] * quantity
                 quantity_search -= 1
-        return quantity * self.price_float()
+        return round(quantity * self.price_float(), 3)
 
     def wait_for_quantity_update(self, expected_quantity:int):
         if expected_quantity < 1:
