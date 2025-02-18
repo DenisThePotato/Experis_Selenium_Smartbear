@@ -136,6 +136,7 @@ class TestSmartbear(TestCase):
             self.category_page.show_max_products_per_page()
             self.category_page.click_on_product_block(self.category_page.get_random_product_block())
             self.product_page.set_quantity(i + 1)
+            sleep(1)
             products_added_dictionaries.insert(0, self.product_page.product_info_dictionary())
             self.product_page.add_to_cart()
             self.main_page.open_main_screen()
