@@ -21,7 +21,10 @@ from page_classes_package.login_page import LoginPage
 from page_classes_package.checkout_pages import CheckoutPage
 
 class TestSmartbear(TestCase):
+    """automated tests for the shopping site smartbear"""
     def setUp(self):
+        """sets up the driver and classes needed,
+        as well as making sure that the user is logged out and the cart is empty"""
         self.driver = webdriver.Edge()
         self.driver.get("https://bearstore-testsite.smartbear.com/")
         self.driver.maximize_window()
@@ -44,11 +47,14 @@ class TestSmartbear(TestCase):
         self.cart_side_page.close_side_cart()
 
     def tearDown(self):
+        """closes the driver"""
         sleep(3)
         self.driver.quit()
 
-    def test_1_E2E(self):
+    def test_navigation_between_screens(self):
+        """tests the navigation between various screens and the expected results"""
         # test A- home page -> category page
+        # go to product category page and verify the title
         main_page_text = self.main_page.page_title_text()
         category = self.main_page.get_random_category()
         category_text = category.text
@@ -57,6 +63,7 @@ class TestSmartbear(TestCase):
         self.assertEqual(self.category_page.breadcrumb_title(), category_text, "Test A failed- breadcrumb title incorrect")
 
         # test B- category page -> product page
+        # go to a product page and verify the title
         self.category_page.show_max_products_per_page()
         product_block = self.category_page.get_random_product_block()
         product_name = self.category_page.product_block_name(product_block)
@@ -65,48 +72,25 @@ class TestSmartbear(TestCase):
         self.assertEqual(self.product_page.breadcrumb_title(), product_name, "Test B failed- breadcrumb title incorrect")
 
         # test C- product page -> category page
+        # go back to product category page and verify the title
         self.product_page.item_category().click()
         self.assertEqual(self.category_page.page_title_text(), category_text, "Test C failed- page title incorrect")
         self.assertEqual(self.category_page.breadcrumb_title(), category_text,"Test C failed- breadcrumb title incorrect")
 
-        # test D
-        self.category_page.main_page().click()
+        # test D - category page -> main page
+        # go back to the main page and verify the title
+        self.category_page.go_to_main_page()
         self.assertEqual(self.main_page.page_title_text(), main_page_text, "Test D failed- page title incorrect")
 
 
-    """home page -> category page"""
-    def test_1_a(self):
-        category = self.main_page.get_random_category()
-        category_text = category.text
-        category.click()
-        self.assertEqual(self.category_page.page_title_text(), category_text)
-
-    """category page -> product page"""
-    def test_1_b(self):
-        self.driver.get("https://bearstore-testsite.smartbear.com/watches")
-        self.category_page.show_max_products_per_page()
-        product_block = self.category_page.get_random_product_block()
-        product_name = self.category_page.product_block_name(product_block)
-        self.category_page.click_on_product_block(product_block)
-        self.assertEqual(self.product_page.page_title_text(), product_name)
-
-    """product page -> category page"""
-    def test_1_c(self):
-        self.driver.get("https://bearstore-testsite.smartbear.com/ball-chair")
-        self.product_page.item_category().click()
-
-    """category page -> home page"""
-    def test_1_d(self):
-        pass
-
-    """add 2 products with different quantities, and check the product quantities in cart"""
-    def test_2_E2E(self):
+    def test_product_quantity_in_cart(self):
+        """add 2 products with different quantities, and check the product quantities in cart"""
         num_of_products_to_add = 2    # max 5
         expected_product_amounts = [num_of_products_to_add - i for i in range(num_of_products_to_add)]
         categories_used_text = []
         for i in range(num_of_products_to_add):    # add the random products from unique categories to cart
             category = self.main_page.get_random_category()
-            while category.text in categories_used_text or category.text == "Gift Cards":
+            while category.text in categories_used_text or category.text == "Gift Cards":   # verifies the category wasnt chosen before
                 category = self.main_page.get_random_category()
             categories_used_text.append(category.text)
             category.click()
@@ -115,21 +99,23 @@ class TestSmartbear(TestCase):
             self.product_page.set_quantity(i + 1)
             self.product_page.add_to_cart()
             self.main_page.open_main_screen()
-        # compare the amount of items in cart to the amounts added
+
         self.cart_side_page.open_side_cart()
         cart_product_blocks = self.cart_side_page.get_item_blocks_list()
-        for i in range(num_of_products_to_add):
+        for i in range(num_of_products_to_add):   # for each product, verify its quantity in cart
             self.assertEqual(self.cart_side_page.get_item_quantity_from_block(cart_product_blocks[i]), expected_product_amounts[i], f"i = {i}, quantity incorrect")
+
 
     """NAME - AMOUNT - PRICE
     doesnt work because the price is sometimes taken before the update to the quantity, not taking block price into account"""
-    def test_3_E2E(self):
+    def test_product_information_in_cart(self):
+        """verifies the names quantities and prices of products added to cart"""
         num_of_products_to_add = 3  # max 5
         products_added_dictionaries = []
         categories_used_text = []
         for i in range(num_of_products_to_add):  # add the random products from unique categories to cart
             category = self.main_page.get_random_category()
-            while category.text in categories_used_text or category.text == "Gift Cards":
+            while category.text in categories_used_text or category.text == "Gift Cards":   # verifies the category wasnt chosen before
                 category = self.main_page.get_random_category()
             categories_used_text.append(category.text)
             category.click()
@@ -162,14 +148,13 @@ class TestSmartbear(TestCase):
             self.product_page.set_quantity(i + 1)
             sleep(1)
             self.product_page.add_to_cart()
-            if i == 0:
+            if i == 0:   # we only need the first products details. the second one will be deleted from cart.
                 product_dict = self.product_page.product_info_dictionary()
             self.main_page.open_main_screen()
         self.cart_side_page.open_side_cart()
         self.cart_side_page.remove_item(self.cart_side_page.get_item_blocks_list()[0])   # removes the last item added
         self.assertEqual(self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[0]),
-                         product_dict, f"cart item dict: {self.cart_side_page.product_block_dictionary(self.cart_side_page.get_item_blocks_list()[0])}"
-                                       f"\nproduct page dict: {product_dict}")
+                         product_dict, f"the product page and cart information doesnt match")
 
     def test_5_E2E(self):
         category = self.main_page.get_random_category()
@@ -257,7 +242,7 @@ class TestSmartbear(TestCase):
                 self.main_page.open_main_screen()
         total_cost = 0
         for i in amount_price_tuples_list:
-            total_cost += round(i[0] * i[1], 3)
+            total_cost += i[0] * i[1]
         self.cart_side_page.go_to_cart_page()
         sleep(2)
         self.cart_page.increase_all_quantities_by_n(1)
@@ -265,11 +250,11 @@ class TestSmartbear(TestCase):
         for i in range(len(amount_price_tuples_list)):
             self.assertEqual(Helper.extract_price(self.cart_page.get_total_item_price_element_list()[i].text), round(amount_price_tuples_list[i][0]*amount_price_tuples_list[i][1], 3),
                              f"the total item price is not correct {amount_price_tuples_list}")
-        self.assertEqual(self.cart_page.get_subtotal(), total_cost,
+        self.assertEqual(self.cart_page.get_subtotal(), round(total_cost, 3),
                          "total cost in side cart doesnt match")
         self.main_page.open_main_screen()
         self.cart_side_page.open_side_cart()
-        self.assertEqual(self.cart_side_page.get_subtotal(), total_cost,
+        self.assertEqual(self.cart_side_page.get_subtotal(), round(total_cost, 3),
                          "the total cost in the side cart is incorrect")
 
 

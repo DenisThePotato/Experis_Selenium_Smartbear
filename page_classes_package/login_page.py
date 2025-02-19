@@ -9,31 +9,38 @@ from random import uniform
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
+
 class LoginPage:
+    """class representing the login page"""
     def __init__(self, driver:webdriver):
         self.driver = driver
 
-    def page_title_text(self):
-        return self.driver.find_element(By.CSS_SELECTOR, ".page-title > h1").text
+    def page_title_text(self) -> str:
+        """returns the page title"""
+        return self.driver.find_element(By.TAG_NAME, "h1").text
 
-    def register_button(self):
-        return self.driver.find_element(By.CSS_SELECTOR, "a.register-button")
-    #//*[@id="content-center"]/div/div/div[2]/article[1]
+    def register_button(self) -> None:
+        """clicks the register button (-> account creation page)"""
+        return self.driver.find_element(By.CSS_SELECTOR, "a.register-button").click()
 
-    def fill_username(self, username):
+    def fill_username(self, username) -> None:
+        """fill the username box"""
         username_box = self.driver.find_element(By.ID, "UsernameOrEmail")
         username_box.clear()
         username_box.send_keys(username)
 
-    def fill_password(self, password):
+    def fill_password(self, password) -> None:
+        """fill the password box"""
         password_box = self.driver.find_element(By.ID, "Password")
         password_box.clear()
         password_box.send_keys(password)
 
-    def press_login(self):
+    def press_login(self) -> None:
+        """click on login"""
         self.driver.find_element(By.CSS_SELECTOR, ".form-group > button").click()
 
-    def logout(self):
+    def logout(self) -> None:
+        """open the account dropdown and click logout"""
         # dropdown_element = self.driver.find_elements(By.CSS_SELECTOR, ".dropdown-menu.dropdown-menu-right.show > a")
         # dropdown = Select(dropdown_element)
         # dropdown.select_by_visible_text("Log out")
